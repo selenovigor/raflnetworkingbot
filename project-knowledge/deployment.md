@@ -54,6 +54,12 @@ Verified:
 - `journalctl -u raflnetworkingbot` shows polling and handled updates.
 - Telegram manual QA in the working channel passed.
 
+Network finding:
+
+- Telegram API over IPv4 from this VPS timed out.
+- Telegram API over IPv6 responded quickly.
+- Bot code forces aiogram `AiohttpSession` to use IPv6 and retries failed replies.
+
 ## Environment Variables
 
 ```env
@@ -88,6 +94,8 @@ cd /opt/raflnetworkingbot
 systemctl status raflnetworkingbot --no-pager
 journalctl -u raflnetworkingbot -f
 systemctl restart raflnetworkingbot
+curl -4 -sS --max-time 20 https://api.telegram.org/bot$BOT_TOKEN/getMe
+curl -6 -sS --max-time 20 https://api.telegram.org/bot$BOT_TOKEN/getMe
 ```
 
 ## Recommended Next Hosting Options
