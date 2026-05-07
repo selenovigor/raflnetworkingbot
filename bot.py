@@ -9,6 +9,7 @@ from typing import Optional
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramNetworkError, TelegramRetryAfter
 from aiogram.types import Message
 
 
@@ -243,6 +244,23 @@ def should_add_subscribe_reminder(message: Message) -> bool:
     return valid_answer_counts[counter_key] % 3 == 0
 
 
+async def reply_with_retry(message: Message, answer: str) -> None:
+    for attempt in range(3):
+        try:
+            await message.reply(answer, request_timeout=30)
+            return
+        except TelegramRetryAfter as error:
+            sleep_for = error.retry_after + 1
+            logging.warning("telegram rate limit, retrying in %s seconds", sleep_for)
+            await asyncio.sleep(sleep_for)
+        except TelegramNetworkError:
+            if attempt == 2:
+                raise
+            sleep_for = 2 * (attempt + 1)
+            logging.warning("telegram network error while replying, retrying in %s seconds", sleep_for)
+            await asyncio.sleep(sleep_for)
+
+
 async def main() -> None:
     logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
@@ -313,7 +331,7 @@ async def main() -> None:
         if answer_key and should_add_subscribe_reminder(message):
             answer = f"{answer}\n\n{SUBSCRIBE_REMINDER}"
 
-        await message.reply(answer)
+        await reply_with_retry(message, answer)
 
     await dp.start_polling(bot)
 
