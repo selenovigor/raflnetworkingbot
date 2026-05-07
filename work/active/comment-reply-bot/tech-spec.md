@@ -1,6 +1,6 @@
 # Tech Spec: comment-reply-bot
 
-Status: implemented, pending VPS deploy
+Status: implemented, deploy blocked
 
 ## 1. Context
 
@@ -16,10 +16,12 @@ User spec: `work/active/comment-reply-bot/user-spec.md`
 | Игнорировать ботов | `message.from_user.is_bot` | Code review |
 | Цифры `1`-`5` | `normalize_answer()` + `RESPONSES` | Ручной тест |
 | Отбивка | `FALLBACK_RESPONSE` | Ручной тест |
+| Несколько вариантов на цифру | `RESPONSES` stores lists and `random.choice()` selects one | Ручной тест repeated same digit |
+| Каждый третий запрос | In-memory `valid_answer_counts` by chat/thread/user | Ручной тест three valid digits |
 
 ## 3. Architecture
 
-Один Python-процесс на aiogram long polling. Состояние не хранится. Конфигурация через env.
+Один Python-процесс на aiogram long polling. Персистентное состояние не хранится. В памяти процесса хранится только счётчик валидных цифровых запросов для subscribe reminder. Конфигурация через env.
 
 ## 4. Files
 
@@ -46,7 +48,7 @@ User spec: `work/active/comment-reply-bot/user-spec.md`
 
 - Unit: не добавлялись, логика малая.
 - Static: `python3 -m py_compile bot.py`.
-- Manual: тестовый канал, сообщения `1`-`5`, произвольный текст, другой пост.
+- Manual: тестовый канал, сообщения `1`-`5`, повтор одной цифры для проверки random pool, три валидных цифры для subscribe reminder, произвольный текст, другой пост.
 
 ## 8. Security and Privacy
 
@@ -66,3 +68,7 @@ User spec: `work/active/comment-reply-bot/user-spec.md`
 - [x] Локальный тест в Telegram проходит.
 - [ ] systemd service активен на VPS.
 - [ ] Тестовый канал работает при выключенном локальном процессе.
+
+## Deployment Blocker
+
+As of 2026-05-07, JustHost VPS deployment is blocked by broken/unstable SSH access. The project has not reached post-deploy QA.

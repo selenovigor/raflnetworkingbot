@@ -1,6 +1,8 @@
 import asyncio
+import json
 import logging
 import os
+import random
 import re
 from typing import Optional
 
@@ -11,54 +13,118 @@ from aiogram.types import Message
 
 
 RESPONSES = {
-    "1": """<b>Одиночка с телефоном</b>
+    "1": [
+        """<b>Одиночка с телефоном</b>
 
-Ты не ищешь внимания — ты систематизируешь наблюдения
-Тебе комфортнее смотреть, анализировать и понимать, чем говорить первым
+<b>Вайб:</b> «Я видел это в Wyscout еще до того, как это стало мейнстримом».
 
-В спортивной индустрии такие формируют смысл.
-Аналитики, редакторы, сценаристы.
+<b>Стиль «Аналитик с окраины»:</b>
+Пока на трибунах жгут файеры, ты в телефоне сверяешь тепловые карты. Твой путь — аналитический штаб «Крыльев Советов». Найдешь таланта в ФНЛ-2 и докажешь, что по xG он круче Холанда.""",
+        """<b>Одиночка с телефоном</b>
 
-Ты входишь в индустрию через контент и глубину.""",
-    "2": """<b>Компания у барной стойки</b>
+<b>Вайб:</b> «Я видел это в Wyscout еще до того, как это стало мейнстримом».
 
-Ты входишь в индустрию через людей.
-Легко начинаешь разговор и быстро становишься частью любой среды
+<b>Стиль «Инсайдер из телеги»:</b>
+Ты тот самый парень, от которого ждут пост «Done deal! 🏁». Твой телефон — это пульт от трансферного рынка. Тебе бы вести анонимный канал про интриги РПЛ, от которого икается всем агентам.""",
+        """<b>Одиночка с телефоном</b>
 
-Для тебя нетворкинг — это способ существования.
-SMM-менеджер, комьюнити-менеджер, продюсер событий
+<b>Вайб:</b> «Я видел это в Wyscout еще до того, как это стало мейнстримом».
 
-В мире спорта, где всё держится на связях,
-ты сразу оказываешься внутри процессов.""",
-    "3": """<b>Спикер у экрана</b>
+<b>Стиль «Тактический зануда»:</b>
+Тебе не интересно, кто забил — тебе интересно, почему опорник не перекрыл линию паса. Твоя тема — делать разборы для Sports.ru или Okko, после которых зрители наконец поймут, что такое «ложная девятка».""",
+    ],
+    "2": [
+        """<b>Компания у барной стойки</b>
 
-Ты входишь в индустрию через амбицию.
-Тебе важнее доступ к сильным людям и знаниям, чем комфорт
+<b>Вайб:</b> «Знаю всех, от повара на базе до президента лиги».
 
-Ты идёшь к тем, кто принимает решения — потому что хочешь быть среди них.
-Бренд-менеджер, креативный директор, Head of Media
+<b>Стиль «SMM Спартака»:</b>
+Ты мастер ловить хайп на ровном месте. Можешь сделать виральный мем из судейской ошибки или заставить легионера выучить частушку. Твоя стихия — самый дерзкий медиа-отдел страны.""",
+        """<b>Компания у барной стойки</b>
 
-Ты быстро оказываешься там, где формируется стратегия.""",
-    "4": """<b>Стол с визитками</b>
+<b>Вайб:</b> «Знаю всех, от повара на базе до президента лиги».
 
-Ты входишь в индустрию через действия.
-Чётко понимаешь, зачем ты здесь и какой результат тебе нужен.
+<b>Стиль «Агент-перехватчик»:</b>
+Ты зашел за соком, а вышел с контрактом на три года. Твой нетворкинг — это искусство. Твое место на переговорах в лобби пятизвездочных отелей, где решаются судьбы чемпионства.""",
+        """<b>Компания у барной стойки</b>
 
-Маркетолог, менеджер по партнёрствам, продюсер.
+<b>Вайб:</b> «Знаю всех, от повара на базе до президента лиги».
 
-Пока другие ищут себя — ты собираешь вокруг себя систему возможностей.""",
-    "5": """<b>Двое в креслах</b>
+<b>Стиль «Медиалига»:</b>
+Для тебя футбол без трэш-тока — это физкультура. Твой вайб — «Амкал» или 2DROTS. Ты залетишь в индустрию через микрофон, харизму и умение делать из матча шоу на миллионы просмотров.""",
+    ],
+    "3": [
+        """<b>Спикер у экрана</b>
 
-Ты входишь в индустрию через доверие
-Выбираешь разговоры, которые имеют вес и могут что-то изменить
+<b>Вайб:</b> «Я здесь, чтобы переписать правила игры».
 
-Креативный продюсер, арт-директор, стратег.
+<b>Стиль «CEO в режиме ожидания»:</b>
+Ты не слушаешь спикера, ты оцениваешь его слабые стороны. Твой план — забрать это кресло через пару сезонов. Твои амбиции — уровень управления топ-клубом РПЛ, где нужна железная рука.""",
+        """<b>Спикер у экрана</b>
 
-Ты строишь связи и позиции, которые невозможно занять случайно.""",
+<b>Вайб:</b> «Я здесь, чтобы переписать правила игры».
+
+<b>Стиль «Архитектор мерча»:</b>
+Тебе мало просто побед, ты хочешь, чтобы клуб был самым стильным. Твой путь — Head of Creative. Ты тот, кто переоденет команду из скучного адидаса в коллаб с модным домом и продаст это как искусство.""",
+        """<b>Спикер у экрана</b>
+
+<b>Вайб:</b> «Я здесь, чтобы переписать правила игры».
+
+<b>Стиль «Реформатор»:</b>
+Тебе тесно в текущих форматах. Ты пришел внедрять чипы в мячи и VR-трансляции. Твоя цель — сделать футбол понятным поколению зумеров, даже если олдскульные фанаты будут против.""",
+    ],
+    "4": [
+        """<b>Стол с визитками</b>
+
+<b>Вайб:</b> «Меньше слов, больше цифр в годовом отчете».
+
+<b>Стиль «Коммерческий хищник»:</b>
+Ты видишь рекламную площадь даже на гетрах футболистов. Твой идеальный рабочий день — закрыть сделку с букмекером, которая покроет бюджет клуба на сезон. Прямая дорога в коммерческий отдел «Зенита».""",
+        """<b>Стол с визитками</b>
+
+<b>Вайб:</b> «Меньше слов, больше цифр в годовом отчете».
+
+<b>Стиль «Директор Match Day»:</b>
+Для тебя футбол начинается с парковки и заканчивается очередью за хот-догами. Ты знаешь, как забить трибуны до отказа даже в понедельник в -10°C. Твой результат — аншлаги и выручка.""",
+        """<b>Стол с визитками</b>
+
+<b>Вайб:</b> «Меньше слов, больше цифр в годовом отчете».
+
+<b>Стиль «Партнер по спецпроектам»:</b>
+Ты умеешь скрещивать нескрещиваемое. Привести авиакомпанию в спонсоры регионального клуба? Легко. Ты строишь систему, в которой футбол — это прибыльный бизнес, а не дотация.""",
+    ],
+    "5": [
+        """<b>Двое в креслах</b>
+
+<b>Вайб:</b> «Решаем вопросы, пока остальные шумят».
+
+<b>Стиль «Спортивный дир»:</b>
+Минимум прессы, максимум влияния. Ты из тех, кто выбирает тренера по философии, а не по фамилии. Твой ориентир — европейская модель управления, где всё решает долгосрочная стратегия.""",
+        """<b>Двое в креслах</b>
+
+<b>Вайб:</b> «Решаем вопросы, пока остальные шумят».
+
+<b>Серый кардинал:</b>
+Тебе не нужно представляться, тебя и так знают те, кто надо. Ты строишь связи годами и решаешь конфликты одним звонком. Твой вход в индустрию — через элитный консалтинг и доверие владельцев.""",
+        """<b>Двое в креслах</b>
+
+<b>Вайб:</b> «Решаем вопросы, пока остальные шумят».
+
+<b>Стиль «Хранитель традиций»:</b>
+Ты создаешь ДНК клуба. Тебе важно, чтобы игроки понимали, за какой ромб они бьются. Твоя работа — превратить обычную команду в «клуб-семью» с миллионами преданных фанатов.""",
+    ],
 }
 
 FALLBACK_RESPONSE = """Здесь работают только цифры
 Посмотри на картинку и напиши номер — от 1 до 5"""
+
+SUBSCRIBE_REMINDER = """Не забудь подписаться на наши проекты
+– Креативная работа в футболе: @rafl_work
+– Эстетика русского футбола: @raflmedia"""
+
+valid_answer_counts: dict[tuple[int, int, int], int] = {}
+STATE_FILE = "state.json"
+DEFAULT_POST_MARKER = "К кому первым подойдешь на нетворкинге?"
 
 
 def get_required_env(name: str) -> str:
@@ -77,6 +143,30 @@ def get_optional_int_env(name: str) -> Optional[int]:
 
 def get_bool_env(name: str) -> bool:
     return os.getenv(name, "").lower() in {"1", "true", "yes", "on"}
+
+
+def get_int_env(name: str) -> Optional[int]:
+    value = os.getenv(name)
+    if not value:
+        return None
+    return int(value)
+
+
+def load_state() -> dict:
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+
+def save_state(state: dict) -> None:
+    with open(STATE_FILE, "w", encoding="utf-8") as file:
+        json.dump(state, file, ensure_ascii=False, indent=2)
+
+
+def get_text_for_marker(message: Message) -> str:
+    return message.text or message.caption or ""
 
 
 def normalize_answer(text: Optional[str]) -> Optional[str]:
@@ -109,18 +199,85 @@ def belongs_to_target_post(message: Message, post_id: int, target_chat_id: Optio
     return post_id in possible_root_ids
 
 
+def belongs_to_active_post(message: Message, state: dict, fallback_post_id: Optional[int], fallback_chat_id: Optional[int]) -> bool:
+    active_post_id = state.get("active_post_id") or fallback_post_id
+    active_chat_id = state.get("active_chat_id") or fallback_chat_id
+
+    if active_post_id is None:
+        return False
+
+    return belongs_to_target_post(message, int(active_post_id), active_chat_id)
+
+
+def activate_discussion_post_if_marker(message: Message, state: dict, post_marker: str, target_chat_id: Optional[int]) -> bool:
+    if target_chat_id is not None and message.chat.id != target_chat_id:
+        return False
+
+    text = get_text_for_marker(message)
+    if post_marker.casefold() not in text.casefold():
+        return False
+
+    state["active_post_id"] = message.message_id
+    state["active_chat_id"] = message.chat.id
+    save_state(state)
+    logging.info(
+        "activated discussion post chat_id=%s post_id=%s marker=%r",
+        message.chat.id,
+        message.message_id,
+        post_marker,
+    )
+    return True
+
+
+def should_add_subscribe_reminder(message: Message) -> bool:
+    if not message.from_user:
+        return False
+
+    counter_key = (
+        message.chat.id,
+        message.message_thread_id or 0,
+        message.from_user.id,
+    )
+    valid_answer_counts[counter_key] = valid_answer_counts.get(counter_key, 0) + 1
+
+    return valid_answer_counts[counter_key] % 3 == 0
+
+
 async def main() -> None:
     logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
     token = get_required_env("BOT_TOKEN")
-    post_id = int(get_required_env("POST_ID"))
+    fallback_post_id = get_int_env("POST_ID")
     target_chat_id = get_optional_int_env("TARGET_CHAT_ID")
     debug_updates = get_bool_env("DEBUG_UPDATES")
+    source_channel_id = get_optional_int_env("SOURCE_CHANNEL_ID")
+    post_marker = os.getenv("POST_MARKER", DEFAULT_POST_MARKER)
+    state = load_state()
 
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
 
-    @dp.message(F.text)
+    @dp.channel_post()
+    async def handle_channel_post(message: Message) -> None:
+        if source_channel_id is not None and message.chat.id != source_channel_id:
+            return
+
+        text = get_text_for_marker(message)
+        if post_marker.casefold() not in text.casefold():
+            return
+
+        state["active_post_id"] = message.message_id
+        state["active_channel_id"] = message.chat.id
+        state.pop("active_chat_id", None)
+        save_state(state)
+        logging.info(
+            "activated channel post channel_id=%s post_id=%s marker=%r",
+            message.chat.id,
+            message.message_id,
+            post_marker,
+        )
+
+    @dp.message()
     async def handle_comment(message: Message) -> None:
         if debug_updates:
             logging.info(
@@ -132,11 +289,29 @@ async def main() -> None:
                 message.text,
             )
 
-        if not belongs_to_target_post(message, post_id, target_chat_id):
+        if activate_discussion_post_if_marker(message, state, post_marker, target_chat_id):
             return
 
+        if not message.text:
+            return
+
+        if not belongs_to_active_post(message, state, fallback_post_id, target_chat_id):
+            return
+
+        if state.get("active_chat_id") != message.chat.id:
+            state["active_chat_id"] = message.chat.id
+            save_state(state)
+            logging.info(
+                "linked discussion chat active_chat_id=%s active_post_id=%s",
+                message.chat.id,
+                state.get("active_post_id") or fallback_post_id,
+            )
+
         answer_key = normalize_answer(message.text)
-        answer = RESPONSES.get(answer_key, FALLBACK_RESPONSE)
+        answer_options = RESPONSES.get(answer_key)
+        answer = random.choice(answer_options) if answer_options else FALLBACK_RESPONSE
+        if answer_key and should_add_subscribe_reminder(message):
+            answer = f"{answer}\n\n{SUBSCRIBE_REMINDER}"
 
         await message.reply(answer)
 
