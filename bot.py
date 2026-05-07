@@ -4,10 +4,12 @@ import logging
 import os
 import random
 import re
+import socket
 from typing import Optional
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramNetworkError, TelegramRetryAfter
 from aiogram.types import Message
@@ -272,7 +274,9 @@ async def main() -> None:
     post_marker = os.getenv("POST_MARKER", DEFAULT_POST_MARKER)
     state = load_state()
 
-    bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    session = AiohttpSession(timeout=90)
+    session._connector_init["family"] = socket.AF_INET6
+    bot = Bot(token=token, session=session, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
 
     @dp.channel_post()
