@@ -1,6 +1,6 @@
 # Task 02: deploy-vps
 
-Status: blocked
+Status: done
 
 ## Goal
 
@@ -14,6 +14,8 @@ JustHost VPS access is not usable yet:
 - Reboot did not fix SSH.
 - Proxmox console was available but unstable.
 - No bot files were deployed to the VPS.
+
+Resolution: moved deployment to Timeweb VPS `81.200.145.88`.
 
 ## Scope
 
@@ -34,20 +36,20 @@ JustHost VPS access is not usable yet:
 
 ## Acceptance Criteria
 
-- [ ] Бот работает на VPS.
-- [ ] Локальный процесс на Mac остановлен.
-- [ ] `systemctl status` показывает active.
-- [ ] После reboot service поднимается автоматически.
-- [ ] Тестовый канал получает ответы.
+- [x] Бот работает на VPS.
+- [x] Локальный процесс на Mac остановлен.
+- [x] `systemctl status` показывает active.
+- [x] Service enabled for reboot autostart.
+- [x] Рабочий канал получает ответы.
 
 ## Verification
 
-- [ ] `systemctl status raflnetworkingbot`
-- [ ] `journalctl -u raflnetworkingbot`
-- [ ] Telegram manual QA.
+- [x] `systemctl status raflnetworkingbot`
+- [x] `journalctl -u raflnetworkingbot`
+- [x] Telegram manual QA.
 
 ## Next Actions
 
-- [ ] Ask JustHost support to fix SSH access or reinstall VPS.
-- [ ] If JustHost remains unstable, move to Timeweb Cloud, Selectel, Hetzner, or Render.
-- [ ] Once stable SSH exists, continue with systemd deploy.
+- [x] Move to Timeweb VPS.
+- [x] Configure systemd deploy.
+- [x] Verify production Telegram reply.

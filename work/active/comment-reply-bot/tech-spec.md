@@ -1,6 +1,6 @@
 # Tech Spec: comment-reply-bot
 
-Status: implemented, deploy blocked
+Status: implemented, deployed
 
 ## 1. Context
 
@@ -66,9 +66,9 @@ User spec: `work/active/comment-reply-bot/user-spec.md`
 
 - [x] Синтаксис проходит.
 - [x] Локальный тест в Telegram проходит.
-- [ ] systemd service активен на VPS.
-- [ ] Тестовый канал работает при выключенном локальном процессе.
+- [x] systemd service активен на VPS.
+- [x] Рабочий канал работает при выключенном локальном процессе.
 
 ## Deployment Blocker
 
-As of 2026-05-07, JustHost VPS deployment is blocked by broken/unstable SSH access. The project has not reached post-deploy QA.
+JustHost VPS deployment was blocked by broken/unstable SSH access. Production deployment was moved to Timeweb VPS and post-deploy QA passed on 2026-05-07.

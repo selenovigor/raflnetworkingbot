@@ -9,6 +9,7 @@
 | 2026-04-27 | VPS вместо Render | Render Background Worker | Render дороговат за одного простого бота; VPS позволит держать несколько ботов | Нужно администрировать сервер |
 | 2026-04-27 | Long polling | Webhooks | Проще на VPS, не нужен домен/HTTPS | Только один активный процесс на токен |
 | 2026-05-07 | JustHost VPS marked unstable/blocked | Keep debugging JustHost, switch provider, return to Render | SSH closes before authentication and console is unreliable | Need stable VPS or managed worker before production launch |
+| 2026-05-07 | Deploy to Timeweb VPS with systemd | Render, JustHost, Selectel | Stable SSH access and reusable VPS for future bots | Need server maintenance, but bot survives Mac shutdown |
 
 ## Notes
 
